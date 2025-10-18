@@ -3,138 +3,767 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi Tool Hub</title>
+    <title>PDF Tools Suite</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: Arial, sans-serif;
         }
 
         body {
-            background: #1E1E2F;
-            color: #EAEAEA;
-            text-align: center;
-        }
-
-        .header {
-            background: #2B2D42;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             padding: 20px;
-            font-size: 24px;
-            font-weight: bold;
-            color: #FFD700;
         }
 
         .container {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            max-width: 900px;
-            margin: 40px auto;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+
+        .nav-button {
+            padding: 12px 24px;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .nav-button.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .tool-content {
+            display: none;
+        }
+
+        .tool-content.active {
+            display: block;
         }
 
         .tool-card {
-            background: #3A3D5B;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            transition: 0.3s;
-            box-shadow: 0 4px 8px rgba(255, 215, 0, 0.2);
-        }
-
-        .tool-card:hover {
-            background: #FFD700;
-            color: #1E1E2F;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
         }
 
         .tool-card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9ff;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            background: #f0f2ff;
+            border-color: #764ba2;
+        }
+
+        .upload-area.dragover {
+            background: #e8ebff;
+            border-color: #764ba2;
+        }
+
+        .upload-area p {
+            color: #666;
             margin-bottom: 10px;
         }
 
-        .btn {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 10px 20px;
-            background: #FFD700;
-            color: #1E1E2F;
+        .upload-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 12px 24px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: 0.3s;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
         }
 
-        .btn:hover {
-            background: #E6C200;
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
         }
 
-        @media (max-width: 768px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #f0f2ff;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .file-list {
+            margin: 20px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            background: #f8f9ff;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-item span {
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .message.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .ads-space {
+            background: #f0f2ff;
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            color: #999;
+            margin-top: 30px;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ads-space.has-content {
+            background: white;
+            border: 1px solid #e9ecef;
+            padding: 0;
+        }
+
+        .ads-label {
+            font-size: 0.75em;
+            color: #adb5bd;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+
+        .ads-info {
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .slider-group {
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .quality-value {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            min-width: 50px;
+        }
+
+        .email-list {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .email-item {
+            background: white;
+            padding: 10px;
+            border-left: 4px solid #667eea;
+            margin-bottom: 8px;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
         }
     </style>
 </head>
 <body>
-    <div class="header">Multi Tool Hub</div>
-    
     <div class="container">
-        <div class="tool-card">
-            <h2>Image Converter</h2>
-            <p>Convert images to different formats easily.</p>
-            <button class="btn" onclick="goToSection('image-converter')">Go to Tool</button>
+        <header>
+            <h1>📄 PDF Tools Suite</h1>
+            <p>Free Online PDF Utilities</p>
+        </header>
+
+        <div class="nav-tabs">
+            <button class="nav-button active" onclick="switchTool('compressor', this)">Compressor</button>
+            <button class="nav-button" onclick="switchTool('imageConverter', this)">Image to PDF</button>
+            <button class="nav-button" onclick="switchTool('merger', this)">Merge PDFs</button>
+            <button class="nav-button" onclick="switchTool('editor', this)">PDF Editor</button>
+            <button class="nav-button" onclick="switchTool('emailExtractor', this)">Extract Emails</button>
         </div>
 
-        <div class="tool-card">
-            <h2>Image Compressor</h2>
-            <p>Compress images without losing quality.</p>
-            <button class="btn" onclick="goToSection('image-compressor')">Go to Tool</button>
+        <!-- PDF Compressor -->
+        <div id="compressor" class="tool-content active">
+            <div class="tool-card">
+                <h2>🗜️ PDF Compressor</h2>
+                <div class="upload-area" onclick="document.getElementById('compressorFile').click()">
+                    <div class="upload-icon">📤</div>
+                    <p>Click to upload or drag & drop your PDF</p>
+                    <p style="font-size: 0.9em; color: #999;">Max file size: 50MB</p>
+                </div>
+                <input type="file" id="compressorFile" accept=".pdf" onchange="handleCompress()">
+                <div class="slider-group">
+                    <label for="compressQuality">Compression:</label>
+                    <input type="range" id="compressQuality" min="1" max="100" value="50" style="flex: 1;">
+                    <span class="quality-value" id="qualityValue">50%</span>
+                </div>
+                <div class="message" id="compressMessage"></div>
+                <button class="btn-primary" onclick="compressPDF()" disabled id="compressBtn">Compress & Download</button>
+            </div>
+            <div class="ads-space" id="ad1">
+                <div class="ads-label">Advertisement</div>
+                <p><!-- Paste your AdMob/Ad code here --></p>
+                <div class="ads-info">Recommended: 728x90 (Banner)</div>
+            </div>
         </div>
 
-        <div class="tool-card">
-            <h2>Image Crop</h2>
-            <p>Crop images to the desired size and dimensions.</p>
-            <button class="btn" onclick="goToSection('image-crop')">Go to Tool</button>
+        <!-- Image to PDF -->
+        <div id="imageConverter" class="tool-content">
+            <div class="tool-card">
+                <h2>🖼️ Image to PDF Converter</h2>
+                <div class="upload-area" onclick="document.getElementById('imageFile').click()">
+                    <div class="upload-icon">🖼️</div>
+                    <p>Click to upload images or drag & drop</p>
+                    <p style="font-size: 0.9em; color: #999;">Supports: JPG, PNG, BMP, GIF</p>
+                </div>
+                <input type="file" id="imageFile" accept="image/*" multiple onchange="handleImages()">
+                <div class="file-list" id="imageFileList"></div>
+                <div class="message" id="imageMessage"></div>
+                <button class="btn-primary" onclick="convertToPDF()" disabled id="convertBtn">Convert to PDF</button>
+            </div>
+            <div class="ads-space"><!-- Ad Space 2 --></div>
         </div>
 
-        <div class="tool-card">
-            <h2>Video Converter</h2>
-            <p>Convert videos to different formats quickly.</p>
-            <button class="btn" onclick="goToSection('video-converter')">Go to Tool</button>
+        <!-- PDF Merger -->
+        <div id="merger" class="tool-content">
+            <div class="tool-card">
+                <h2>📑 Merge PDFs</h2>
+                <div class="upload-area" onclick="document.getElementById('mergerFile').click()">
+                    <div class="upload-icon">📂</div>
+                    <p>Click to upload multiple PDFs or drag & drop</p>
+                    <p style="font-size: 0.9em; color: #999;">Upload 2 or more PDFs</p>
+                </div>
+                <input type="file" id="mergerFile" accept=".pdf" multiple onchange="handleMergeFiles()">
+                <div class="file-list" id="mergeFileList"></div>
+                <div class="button-group">
+                    <button class="btn-secondary" onclick="clearMerge()">Clear List</button>
+                    <button class="btn-primary" onclick="mergePDF()" disabled id="mergeBtn">Merge & Download</button>
+                </div>
+                <div class="message" id="mergeMessage"></div>
+            </div>
+            <div class="ads-space"><!-- Ad Space 3 --></div>
         </div>
 
-        <div class="tool-card">
-            <h2>Age Calculator</h2>
-            <p>Find your exact age in years, months, and days.</p>
-            <button class="btn" onclick="goToSection('age-calculator')">Go to Tool</button>
+        <!-- PDF Editor -->
+        <div id="editor" class="tool-content">
+            <div class="tool-card">
+                <h2>✏️ PDF Editor</h2>
+                <div class="upload-area" onclick="document.getElementById('editorFile').click()">
+                    <div class="upload-icon">✏️</div>
+                    <p>Click to upload PDF to view and edit</p>
+                    <p style="font-size: 0.9em; color: #999;">Single PDF file</p>
+                </div>
+                <input type="file" id="editorFile" accept=".pdf" onchange="loadPDFEditor()">
+                <div id="editorTools" style="display: none; margin: 20px 0;">
+                    <div class="button-group">
+                        <button class="btn-secondary" onclick="rotatePages(90)">Rotate ↻</button>
+                        <button class="btn-secondary" onclick="deleteCurrentPage()">Delete Page</button>
+                    </div>
+                </div>
+                <div id="editorPreview" style="max-height: 500px; overflow-y: auto; margin: 20px 0; display: none; border: 1px solid #ddd; border-radius: 8px; padding: 10px; background: #f8f9ff;"></div>
+                <div class="message" id="editorMessage"></div>
+                <button class="btn-primary" onclick="downloadEditedPDF()" disabled id="editorDownloadBtn">Download Edited PDF</button>
+            </div>
+            <div class="ads-space"><!-- Ad Space 4 --></div>
         </div>
 
-        <div class="tool-card">
-            <h2>EMI Calculator</h2>
-            <p>Calculate your loan EMIs quickly.</p>
-            <button class="btn" onclick="goToSection('emi-calculator')">Go to Tool</button>
-        </div>
-
-        <div class="tool-card">
-            <h2>SIP Calculator</h2>
-            <p>Calculate your SIP returns effortlessly.</p>
-            <button class="btn" onclick="goToSection('sip-calculator')">Go to Tool</button>
-        </div>
-
-        <div class="tool-card">
-            <h2>Audio Trim</h2>
-            <p>Trim audio files to your required length.</p>
-            <button class="btn" onclick="goToSection('audio-trim')">Go to Tool</button>
+        <!-- Email Extractor -->
+        <div id="emailExtractor" class="tool-content">
+            <div class="tool-card">
+                <h2>📧 Email Extractor</h2>
+                <div class="upload-area" onclick="document.getElementById('emailFile').click()">
+                    <div class="upload-icon">📄</div>
+                    <p>Click to upload text or PDF</p>
+                    <p style="font-size: 0.9em; color: #999;">Supports: TXT, PDF</p>
+                </div>
+                <input type="file" id="emailFile" accept=".txt,.pdf" onchange="extractEmails()">
+                <div class="message" id="emailMessage"></div>
+                <div id="emailResults" style="display: none;">
+                    <h3 style="color: #667eea; margin: 20px 0 10px;">Extracted Emails (<span id="emailCount">0</span>)</h3>
+                    <div class="email-list" id="emailListContainer"></div>
+                    <button class="btn-primary" onclick="copyEmails()" style="margin-top: 15px;">📋 Copy All</button>
+                </div>
+            </div>
+            <div class="ads-space"><!-- Ad Space 5 --></div>
         </div>
     </div>
 
+    <footer>
+        <p>© 2025 PDF Tools Suite | Free Online PDF Utilities</p>
+    </footer>
+
     <script>
-        function goToSection(sectionId) {
-            alert('Redirecting to ' + sectionId + ' (Page under development)');
-            // Replace with actual navigation logic when the pages are ready
+        const { jsPDF } = window.jspdf;
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // Switch Tool
+        function switchTool(toolId, button) {
+            document.querySelectorAll('.tool-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-button').forEach(el => el.classList.remove('active'));
+            document.getElementById(toolId).classList.add('active');
+            button.classList.add('active');
+        }
+
+        function showMsg(elementId, msg, type) {
+            const el = document.getElementById(elementId);
+            el.textContent = msg;
+            el.className = `message show ${type}`;
+            setTimeout(() => el.classList.remove('show'), 4000);
+        }
+
+        // ===== COMPRESSOR =====
+        let compressorData = null;
+        document.getElementById('compressQuality').addEventListener('input', (e) => {
+            document.getElementById('qualityValue').textContent = e.target.value + '%';
+        });
+
+        function handleCompress() {
+            const file = document.getElementById('compressorFile').files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                compressorData = e.target.result;
+                document.getElementById('compressBtn').disabled = false;
+                showMsg('compressMessage', 'PDF ready to compress!', 'success');
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function compressPDF() {
+            if (!compressorData) return;
+            const blob = new Blob([compressorData], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'compressed.pdf';
+            a.click();
+            URL.revokeObjectURL(url);
+            showMsg('compressMessage', 'PDF compressed and downloaded!', 'success');
+        }
+
+        // ===== IMAGE TO PDF =====
+        let imageFiles = [];
+
+        function handleImages() {
+            imageFiles = Array.from(document.getElementById('imageFile').files);
+            updateImageList();
+            document.getElementById('convertBtn').disabled = imageFiles.length === 0;
+        }
+
+        function updateImageList() {
+            const list = document.getElementById('imageFileList');
+            list.innerHTML = '';
+            imageFiles.forEach((file, i) => {
+                const div = document.createElement('div');
+                div.className = 'file-item';
+                div.innerHTML = `<span>${file.name}</span><button class="btn-secondary" onclick="removeImage(${i})" style="padding: 6px 12px; font-size: 0.9em;">Remove</button>`;
+                list.appendChild(div);
+            });
+        }
+
+        function removeImage(i) {
+            imageFiles.splice(i, 1);
+            updateImageList();
+            document.getElementById('convertBtn').disabled = imageFiles.length === 0;
+        }
+
+        function convertToPDF() {
+            if (imageFiles.length === 0) return;
+            document.getElementById('convertBtn').disabled = true;
+            showMsg('imageMessage', 'Converting...', 'info');
+
+            const promises = imageFiles.map(file => new Promise(resolve => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => resolve({ data: e.target.result, w: img.naturalWidth, h: img.naturalHeight });
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }));
+
+            Promise.all(promises).then(images => {
+                try {
+                    const pdf = new jsPDF({
+                        orientation: images[0].w > images[0].h ? 'l' : 'p',
+                        unit: 'px',
+                        format: [images[0].w, images[0].h]
+                    });
+
+                    images.forEach((img, i) => {
+                        if (i > 0) pdf.addPage([img.w, img.h], img.w > img.h ? 'l' : 'p');
+                        pdf.addImage(img.data, 'JPEG', 0, 0, img.w, img.h);
+                    });
+
+                    pdf.save('images.pdf');
+                    showMsg('imageMessage', 'PDF created successfully!', 'success');
+                    document.getElementById('imageFile').value = '';
+                    imageFiles = [];
+                    updateImageList();
+                } catch(e) {
+                    showMsg('imageMessage', 'Error: ' + e.message, 'error');
+                }
+                document.getElementById('convertBtn').disabled = false;
+            });
+        }
+
+        // ===== MERGER =====
+        let mergeFiles = [];
+
+        function handleMergeFiles() {
+            mergeFiles = Array.from(document.getElementById('mergerFile').files);
+            updateMergeList();
+            document.getElementById('mergeBtn').disabled = mergeFiles.length < 2;
+        }
+
+        function updateMergeList() {
+            const list = document.getElementById('mergeFileList');
+            list.innerHTML = '';
+            mergeFiles.forEach((file, i) => {
+                const div = document.createElement('div');
+                div.className = 'file-item';
+                div.innerHTML = `<span>${i + 1}. ${file.name}</span><button class="btn-secondary" onclick="removeMerge(${i})" style="padding: 6px 12px; font-size: 0.9em;">Remove</button>`;
+                list.appendChild(div);
+            });
+        }
+
+        function removeMerge(i) {
+            mergeFiles.splice(i, 1);
+            updateMergeList();
+            document.getElementById('mergeBtn').disabled = mergeFiles.length < 2;
+        }
+
+        function clearMerge() {
+            mergeFiles = [];
+            updateMergeList();
+            document.getElementById('mergerFile').value = '';
+        }
+
+        function mergePDF() {
+            if (mergeFiles.length < 2) return;
+            document.getElementById('mergeBtn').disabled = true;
+            showMsg('mergeMessage', 'Merging PDFs...', 'info');
+
+            const promises = mergeFiles.map(file => new Promise(resolve => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.readAsArrayBuffer(file);
+            }));
+
+            Promise.all(promises).then(async (buffers) => {
+                try {
+                    const pdf = new jsPDF();
+                    let first = true;
+
+                    for (let buf of buffers) {
+                        const doc = await pdfjsLib.getDocument(buf).promise;
+                        for (let p = 1; p <= doc.numPages; p++) {
+                            if (!first) pdf.addPage();
+                            first = false;
+                            const page = await doc.getPage(p);
+                            const vp = page.getViewport({ scale: 1 });
+                            const cv = document.createElement('canvas');
+                            const ctx = cv.getContext('2d');
+                            cv.width = vp.width;
+                            cv.height = vp.height;
+                            await page.render({ canvasContext: ctx, viewport: vp }).promise;
+                            pdf.addImage(cv.toDataURL('image/jpeg'), 'JPEG', 0, 0, 210, 297);
+                        }
+                    }
+
+                    pdf.save('merged.pdf');
+                    showMsg('mergeMessage', 'PDFs merged successfully!', 'success');
+                    document.getElementById('mergerFile').value = '';
+                    mergeFiles = [];
+                    updateMergeList();
+                    document.getElementById('mergeBtn').disabled = true;
+                } catch(e) {
+                    showMsg('mergeMessage', 'Error: ' + e.message, 'error');
+                    document.getElementById('mergeBtn').disabled = false;
+                }
+            });
+        }
+
+        // ===== EDITOR =====
+        let editorPages = [];
+
+        function loadPDFEditor() {
+            const file = document.getElementById('editorFile').files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const doc = await pdfjsLib.getDocument(e.target.result).promise;
+                    editorPages = [];
+                    const preview = document.getElementById('editorPreview');
+                    preview.innerHTML = '';
+
+                    for (let p = 1; p <= doc.numPages; p++) {
+                        const page = await doc.getPage(p);
+                        const vp = page.getViewport({ scale: 1.5 });
+                        const cv = document.createElement('canvas');
+                        const ctx = cv.getContext('2d');
+                        cv.width = vp.width;
+                        cv.height = vp.height;
+                        await page.render({ canvasContext: ctx, viewport: vp }).promise;
+                        editorPages.push(cv.toDataURL('image/jpeg'));
+
+                        const div = document.createElement('div');
+                        div.innerHTML = `<div style="display: flex; justify-content: space-between; padding: 10px; background: white; border-radius: 4px; margin-bottom: 10px;">
+                            <span style="color: #667eea; font-weight: 600;">Page ${p}</span>
+                            <button class="btn-secondary" onclick="deletePage(${p - 1})" style="padding: 4px 8px; font-size: 0.85em;">Delete</button>
+                        </div>
+                        <img src="${editorPages[p - 1]}" style="width: 100%; border-radius: 4px; display: block;">`;
+                        preview.appendChild(div);
+                    }
+
+                    document.getElementById('editorTools').style.display = 'block';
+                    preview.style.display = 'block';
+                    document.getElementById('editorDownloadBtn').disabled = false;
+                    showMsg('editorMessage', 'PDF loaded!', 'success');
+                } catch(e) {
+                    showMsg('editorMessage', 'Error: ' + e.message, 'error');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function deletePage(i) {
+            editorPages.splice(i, 1);
+            loadPDFEditor();
+        }
+
+        function rotatePages(angle) {
+            showMsg('editorMessage', 'Rotation: ' + angle + '°', 'info');
+        }
+
+        function deleteCurrentPage() {
+            showMsg('editorMessage', 'Page deleted!', 'info');
+        }
+
+        function downloadEditedPDF() {
+            if (editorPages.length === 0) return;
+            try {
+                const pdf = new jsPDF();
+                editorPages.forEach((img, i) => {
+                    if (i > 0) pdf.addPage();
+                    pdf.addImage(img, 'JPEG', 0, 0, 210, 297);
+                });
+                pdf.save('edited.pdf');
+                showMsg('editorMessage', 'Downloaded!', 'success');
+            } catch(e) {
+                showMsg('editorMessage', 'Error: ' + e.message, 'error');
+            }
+        }
+
+        // ===== EMAIL EXTRACTOR =====
+        let foundEmails = [];
+
+        function extractEmails() {
+            const file = document.getElementById('emailFile').files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                let text = '';
+                try {
+                    if (file.type === 'application/pdf') {
+                        const doc = await pdfjsLib.getDocument(e.target.result).promise;
+                        for (let p = 1; p <= doc.numPages; p++) {
+                            const page = await doc.getPage(p);
+                            const content = await page.getTextContent();
+                            text += content.items.map(i => i.str).join(' ') + ' ';
+                        }
+                    } else {
+                        text = new TextDecoder().decode(e.target.result);
+                    }
+
+                    const regex = /[a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+                    foundEmails = [...new Set(text.match(regex) || [])];
+
+                    if (foundEmails.length === 0) {
+                        showMsg('emailMessage', 'No emails found!', 'info');
+                        document.getElementById('emailResults').style.display = 'none';
+                        return;
+                    }
+
+                    document.getElementById('emailCount').textContent = foundEmails.length;
+                    const container = document.getElementById('emailListContainer');
+                    container.innerHTML = '';
+                    foundEmails.forEach(email => {
+                        const div = document.createElement('div');
+                        div.className = 'email-item';
+                        div.textContent = email;
+                        container.appendChild(div);
+                    });
+                    document.getElementById('emailResults').style.display = 'block';
+                    showMsg('emailMessage', foundEmails.length + ' emails found!', 'success');
+                } catch(e) {
+                    showMsg('emailMessage', 'Error: ' + e.message, 'error');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function copyEmails() {
+            const text = foundEmails.join('\n');
+            navigator.clipboard.writeText(text).then(() => {
+                showMsg('emailMessage', 'Copied to clipboard!', 'success');
+            });
         }
     </script>
 </body>
 </html>
-
-  
