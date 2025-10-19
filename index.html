@@ -338,13 +338,14 @@
 
         <!-- PDF Compressor -->
         <div id="compressor" class="tool-content active">
-            <div class="tool-card">
-                <h2>🗜️ PDF Compressor</h2>
-                <div class="upload-area" onclick="document.getElementById('compressorFile').click()">
-                    <div class="upload-icon">📤</div>
-                    <p>Click to upload or drag & drop your PDF</p>
-                    <p style="font-size: 0.9em; color: #999;">Max file size: 50MB</p>
-                </div>
+           <div class="tool-card">
+    <h2><a href="pdf-compressor.html" style="text-decoration: none; color: inherit;">🗜️ PDF Compressor</a></h2>
+    <div class="upload-area" onclick="document.getElementById('compressorFile').click()">
+        <div class="upload-icon">📤</div>
+        <p>Click to upload or drag & drop your PDF</p>
+        <p style="font-size: 0.9em; color: #999;">Max file size: 50MB</p>
+    </div>
+</div>
                 <input type="file" id="compressorFile" accept=".pdf" onchange="handleCompress()">
                 <div class="slider-group">
                     <label for="compressQuality">Compression:</label>
